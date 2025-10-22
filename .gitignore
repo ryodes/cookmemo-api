@@ -1,0 +1,51 @@
+# ---- Python / Flask ----
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+instance/
+.env
+.env.*
+
+# ---- Virtual Environment ----
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# ---- Flask Migrations ----
+# (on garde le dossier migrations/ mais pas les fichiers temporaires)
+migrations/*.log
+
+# ---- Logs ----
+*.log
+*.sqlite3
+*.pid
+
+# ---- OS Files ----
+.DS_Store
+Thumbs.db
+
+# ---- VS Code / IDE ----
+.vscode/
+.idea/
+
+# ---- React (si ton frontend est dans un sous-dossier) ----
+node_modules/
+build/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---- Docker (si tu utilises plus tard) ----
+*.pid
+*.seed
+*.bak
+
+# ---- Temporary / Backup ----
+*.swp
+*.swo
+*~
