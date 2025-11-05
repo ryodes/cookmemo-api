@@ -26,6 +26,28 @@ def get_recipes():
 
     return jsonify({"recipes": recipes_list}), 200
 
+@bp.route('/<int:id>', methods=['GET'])
+@jwt_required()
+def get_recipe_by_id(id):
+    recipe = Recipe.query.filter_by(id=id).first()
+    user_email = get_jwt_identity()
+
+    if not recipe:
+        return jsonify({"error": "Recette introuvable"}), 404
+
+    recipe_data = {
+        "id": recipe.id,
+        "title": recipe.title,
+        "ingredients": recipe.ingredients,
+        "steps": recipe.steps,
+        "image": recipe.image,
+        "author_email": recipe.author_email,
+        "nb_part": recipe.nb_part,
+        "created_at": recipe.created_at,
+    }
+
+    return jsonify(recipe_data), 200
+
 ################ POST ################
 
 @bp.route('/', methods=['POST'])
@@ -72,6 +94,46 @@ def create_recipe():
             "created_at": recipe.created_at
         }
     }), 201
+
+################ POST ################
+
+@bp.route('/<int:id>', methods=['PUT'])
+@jwt_required()
+def update_recipe(id):
+    data = request.get_json() or {}
+    user_email = get_jwt_identity()
+
+    recipe = Recipe.query.get(id)
+    if not recipe:
+        return jsonify({"error": "Recette introuvable"}), 404
+
+    if recipe.author_email != user_email:
+        return jsonify({"error": "Action non autorisée"}), 403
+
+    for field in ["title", "ingredients", "steps", "image", "nb_part"]:
+        if field in data:
+            setattr(recipe, field, data[field])
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Erreur lors de la mise à jour", "details": str(e)}), 500
+
+    return jsonify({
+        "message": "Recette mise à jour avec succès",
+        "recipe": {
+            "id": recipe.id,
+            "title": recipe.title,
+            "ingredients": recipe.ingredients,
+            "steps": recipe.steps,
+            "image": recipe.image,
+            "author_email": recipe.author_email,
+            "nb_part": recipe.nb_part,
+            "created_at": recipe.created_at,
+        }
+    }), 200
+
 
 # curl -X POST http://127.0.0.1:5000/recipes   -H "Content-Type: application/json"   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1OTk2MTMwOSwianRpIjoiNDY1NWQ3NjYtNWEwMS00MThlLWI0ODgtNDUyMmZkZWY5N2NmIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImsyYWNpbTMxQGdtYWlsLmNvbSIsIm5iZiI6MTc1OTk2MTMwOSwiY3NyZiI6ImRkYTYzMTk0LTQ0ZTAtNGMwNC05OTcxLTY2OTk1NTFlNDgxMiIsImV4cCI6MTc1OTk2MjIwOX0.JrJYmiZeg8-1JvzSlUUn7NgN7A1vBQHIuGA6gD_l3_s"   -d '{"title": "Test", "ingredients": ["Farine"], "steps": ["Mélanger"]}'
 # curl -X GET http://127.0.0.1:5000/recipes   -H "Content-Type: application/json"   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2MDAwNDAxNCwianRpIjoiNGIzZjM0ZDYtMTZmZi00YzkxLTk4MzEtMzk0MjFiYmNiNmZhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImsyYWNpbTMxQGdtYWlsLmNvbSIsIm5iZiI6MTc2MDAwNDAxNCwiZXhwIjoxNzYwMDA0OTE0fQ.gfp7UAKgFpinNbG9dgqgBapiaIYgcVBE8m9XhQTtUBQ"
