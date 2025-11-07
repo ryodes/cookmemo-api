@@ -4,6 +4,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity,\
                         set_refresh_cookies, create_access_token, create_refresh_token
 from app.models import db, User
 from datetime import timedelta
+import os
+
+IS_PROD = os.getenv("FLASK_ENV") == "production"
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -29,8 +32,8 @@ def login():
                 "refresh_token",
                 refresh_token,
                 httponly=True,
-                secure=False,      # ⚠️ en local mets False sinon ton cookie sera bloqué
-                samesite="Lax"
+                secure=IS_PROD,          # True seulement en prod
+                samesite="None" if IS_PROD else "Lax"
             )
             return response
         else:
@@ -50,8 +53,8 @@ def login():
             "refresh_token",
             refresh_token,
             httponly=True,
-            secure=False,    # ⚠️ en local mets False sinon ton cookie sera bloqué
-            samesite="Lax"
+            secure=IS_PROD,          # True seulement en prod
+            samesite="None" if IS_PROD else "Lax"
         )
         return response
 
