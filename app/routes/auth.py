@@ -32,8 +32,8 @@ def login():
                 "refresh_token",
                 refresh_token,
                 httponly=True,
-                secure=IS_PROD,          # True seulement en prod
-                samesite="None" if IS_PROD else "Lax"
+                secure=os.getenv("SECURE_ENV", "False").lower() == "true",          # True seulement en prod
+                samesite=os.getenv("SAMESITE_ENV", "Lax") # if IS_PROD else "Lax"
             )
             return response
         else:
@@ -53,7 +53,7 @@ def login():
             "refresh_token",
             refresh_token,
             httponly=True,
-            secure=IS_PROD,          # True seulement en prod
+            secure=True,          # True seulement en prod
             samesite="None" if IS_PROD else "Lax"
         )
         return response
